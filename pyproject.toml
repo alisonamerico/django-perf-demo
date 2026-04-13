@@ -26,5 +26,5 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py", "*_test.py"]
 
 [tool.ruff]
-line-length = 88
+line-length = 79
 target-version = "py312"

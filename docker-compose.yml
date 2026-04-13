@@ -21,10 +21,8 @@ services:
     depends_on:
       - db
 
-  web-test:
-    build:
-      context: .
-      target: test
+  test:
+    build: .
     profiles:
       - test
     command: pytest -v
@@ -34,7 +32,7 @@ services:
     depends_on:
       - db
 
-  web-shell:
+  shell:
     build: .
     profiles:
       - test

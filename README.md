@@ -163,23 +163,10 @@ ______________________________________________________________________
 
 ## Commands
 
-### Running Tests
-
-```bash
-# Run tests
-docker compose --profile test run web-test
-
-# Run tests with output
-docker compose --profile test run web-test pytest -v
-
-# Run specific test file
-docker compose --profile test run web-test pytest store/tests/test_n_plus_one_fk.py
-```
-
 ### Development
 
 ```bash
-# Rebuild and start
+# Build and start
 docker compose up --build -d
 
 # View logs
@@ -187,14 +174,17 @@ docker compose logs -f web
 
 # Stop services
 docker compose down
-
-# Access container shell
-docker compose run --rm web sh
 ```
 
 ### Database
 
 ```bash
+# Run migrations
+docker compose run --rm web python manage.py migrate
+
+# Seed database
+docker compose run --rm web python manage.py seed
+
 # Access PostgreSQL
 docker compose run --rm db psql -U perfuser -d perfdb
 
@@ -203,6 +193,19 @@ docker compose down -v
 docker compose up -d
 docker compose run --rm web python manage.py migrate
 docker compose run --rm web python manage.py seed
+```
+
+### Tests
+
+```bash
+# Run all tests
+docker compose --profile test run test
+
+# Run specific test file
+docker compose --profile test run test pytest store/tests/test_n_plus_one_fk.py
+
+# Access container shell
+docker compose --profile test run shell
 ```
 
 ______________________________________________________________________
@@ -252,3 +255,4 @@ ______________________________________________________________________
 - **django-debug-toolbar** - SQL inspection
 - **django-silk** - Request profiling
 - **factory-boy** - Test data generation
+- **Faker** - Fake data generation
