@@ -1,0 +1,35 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}
+    {% trans "Pagination" %} - Slow
+{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        {% trans "Without pagination" %} <span class="badge-slow">{% trans "SLOW" %}</span>
+    </h1>
+    <p>
+        {% trans "Returns all records at once. With lots of data this overloads the database, memory and the browser." %}
+    </p>
+    <pre>books = Book.objects.select_related("author")  # {% trans "all records" %}</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Year" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author.name }}</td>
+                    <td>{{ book.published_year }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong> - {{ books|length }} {% trans "books loaded" %}
+    </div>
+{% endblock %}

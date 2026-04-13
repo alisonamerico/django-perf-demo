@@ -1,0 +1,177 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}
+    {% trans "Django Performance Demo" %} - {% trans "Overview" %}
+{% endblock %}
+{% block header %}
+    {% trans "Overview" %}
+{% endblock %}
+{% block content %}
+    <div class="hero">
+        <h1>{% trans "Django ORM Performance" %}</h1>
+        <p>
+            {% trans "Learn to identify and fix the 5 most common performance problems in Django applications. Interactive playground with real-time statistics." %}
+        </p>
+        <a href="{% url 'store:playground' %}" class="btn btn-primary">🎮 {% trans "Try the Playground" %} →</a>
+    </div>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">🔍</span> {% trans "N+1 Query" %}
+            </h3>
+            <p>
+                {% trans "Understand how unnecessary queries are triggered when accessing ForeignKey and ManyToMany relationships." %}
+            </p>
+        </div>
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">⚡</span> select_related
+            </h3>
+            <p>{% trans "Use JOINs to fetch related data in a single query. Ideal for ForeignKey." %}</p>
+        </div>
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">📦</span> prefetch_related
+            </h3>
+            <p>{% trans "Fetches relationships in separate queries but caches everything together. Perfect for ManyToMany." %}</p>
+        </div>
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">📊</span> {% trans "only() & defer()" %}
+            </h3>
+            <p>{% trans "Load only the fields you need, avoiding unnecessary SELECT *." %}</p>
+        </div>
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">🔢</span> {% trans "count()" %}
+            </h3>
+            <p>{% trans "Use COUNT(*) in the database instead of loading everything into memory with len()." %}</p>
+        </div>
+        <div class="feature-card">
+            <h3>
+                <span class="feature-icon">📄</span> Paginator
+            </h3>
+            <p>{% trans "Load only what's needed per page, avoiding memory leaks and timeouts." %}</p>
+        </div>
+    </div>
+    <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">{% trans "The 5 Performance Problems" %}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{% trans "Problem" %}</th>
+                    <th>{% trans "Solution Technique" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>N+1 - ForeignKey</td>
+                    <td>
+                        <code>select_related()</code>
+                    </td>
+                    <td>
+                        <a href="{% url 'store:books_slow' %}">{% trans "View demo" %} →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>N+1 - ManyToMany</td>
+                    <td>
+                        <code>prefetch_related()</code>
+                    </td>
+                    <td>
+                        <a href="{% url 'store:tags_slow' %}">{% trans "View demo" %} →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Unnecessary SELECT *</td>
+                    <td>
+                        <code>only()</code> / <code>defer()</code>
+                    </td>
+                    <td>
+                        <a href="{% url 'store:fields_slow' %}">{% trans "View demo" %} →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>len() vs count()</td>
+                    <td>
+                        <code>.count()</code>
+                    </td>
+                    <td>
+                        <a href="{% url 'store:count_slow' %}">{% trans "View demo" %} →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Missing pagination</td>
+                    <td>
+                        <code>Paginator</code>
+                    </td>
+                    <td>
+                        <a href="{% url 'store:paginate_slow' %}">{% trans "View demo" %} →</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="grid-2">
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">🎮 {% trans "Interactive Playground" %}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                {% trans "Test each problem interactively. Run \"slow\" and \"fast\" versions and compare:" %}
+            </p>
+            <ul style="color: var(--text-secondary);
+                       margin-bottom: 1rem;
+                       padding-left: 1.25rem">
+                <li>{% trans "Number of executed queries" %}</li>
+                <li>{% trans "Execution time (ms)" %}</li>
+                <li>{% trans "Generated SQL" %}</li>
+            </ul>
+            <a href="{% url 'store:playground' %}" class="btn btn-primary">{% trans "Access Playground" %} →</a>
+        </div>
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">📖 {% trans "Full Documentation" %}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">{% trans "Detailed reference with:" %}</p>
+            <ul style="color: var(--text-secondary);
+                       margin-bottom: 1rem;
+                       padding-left: 1.25rem">
+                <li>{% trans "Explanation of each problem" %}</li>
+                <li>{% trans "Code before and after" %}</li>
+                <li>{% trans "When to use each technique" %}</li>
+                <li>{% trans "Debug tools" %}</li>
+            </ul>
+            <a href="{% url 'store:docs' %}" class="btn btn-outline">{% trans "View Documentation" %} →</a>
+        </div>
+    </div>
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">🔧 {% trans "Debug Tools" %}</h3>
+        <div class="grid-3">
+            <div>
+                <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Django Debug Toolbar</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    {% trans "Side panel with SQL, query time, cache and more." %}
+                </p>
+                <a href="/__debug__/" style="font-size: 0.85rem;">/__debug__/ →</a>
+            </div>
+            <div>
+                <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Django Silk</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    {% trans "Profiling dashboard with request history." %}
+                </p>
+                <a href="/silk/" style="font-size: 0.85rem;">/silk/ →</a>
+            </div>
+            <div>
+                <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">EXPLAIN ANALYZE</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    {% trans "PostgreSQL execution plan for query optimization." %}
+                </p>
+                <a href="{% url 'store:tools' %}" style="font-size: 0.85rem;">{% trans "See how to use" %} →</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

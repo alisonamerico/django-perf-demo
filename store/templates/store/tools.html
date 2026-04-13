@@ -1,0 +1,102 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}
+    {% trans "Query Analysis Tools" %}
+{% endblock %}
+{% block content %}
+    <h1 class="page-title">{% trans "Query Analysis Tools" %}</h1>
+    <div style="display:grid; gap:1.5rem;">
+        <!-- Debug Toolbar -->
+        <div class="card">
+            <h3 style="margin-bottom:0.5rem;">1. Django Debug Toolbar</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom:0.75rem;">
+                {% trans "Side panel that appears on all pages with DEBUG=True. Shows number of queries, generated SQL, time per query and stack trace." %}
+            </p>
+            <p style="font-size:0.85rem;">
+                {% trans "How to use:" %} {% trans "look at the panel on the right side of this page. Click on SQL to see the queries for this view." %}
+            </p>
+            <pre>
+# settings.py
+INTERNAL_IPS = ["127.0.0.1"]
+
+# necessary in Docker
+import socket
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS += [ip[: ip.rfind(".")] + ".1" for ip in ips]</pre>
+        </div>
+        <!-- connection.queries -->
+        <div class="card">
+            <h3 style="margin-bottom:0.5rem;">2. connection.queries</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom:0.75rem;">
+                {% trans "Python list with all queries executed in the current request. Useful for programmatic inspection - in views, scripts or tests. Requires DEBUG=True." %}
+            </p>
+            <pre>
+from django.db import connection, reset_queries
+
+reset_queries()          # reset counter
+qs = Book.objects.select_related("author")[:10]
+list(qs)                 # force execution
+print(len(connection.queries))   # count
+print(connection.queries[0])     # {'sql': '...', 'time': '0.002'}</pre>
+            <p style="font-size:0.85rem; margin-top:0.75rem;">
+                {% trans "Queries executed in this view" %}: <strong>{{ query_count }}</strong>
+            </p>
+            <div style="margin-top:0.75rem;
+                        display:flex;
+                        flex-direction:column;
+                        gap:0.5rem">
+                {% for q in queries %}
+                    <div style="background:#f8fafc;
+                                border-radius:6px;
+                                padding:0.6rem 0.75rem;
+                                border:1px solid #e2e8f0">
+                        <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:3px;">
+                            {{ forloop.counter }}. {% trans "time" %}: {{ q.time }}s
+                        </div>
+                        <code style="font-size:0.78rem; color:#1e293b; word-break:break-all;">{{ q.sql }}</code>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Silk -->
+        <div class="card">
+            <h3 style="margin-bottom:0.5rem;">3. Django Silk</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom:0.75rem;">
+                {% trans "Complete profiling dashboard. Records all requests, queries per request, execution time and stack trace. Persists data in the database - useful for comparing requests over time." %}
+            </p>
+            <pre>
+# settings.py
+INSTALLED_APPS = [..., "silk"]
+MIDDLEWARE = ["silk.middleware.SilkyMiddleware", ...]
+SILKY_PYTHON_PROFILER = True
+
+# urls.py
+path("silk/", include("silk.urls", namespace="silk"))</pre>
+            <p style="font-size:0.85rem; margin-top:0.75rem;">
+                {% trans "Access the dashboard at" %} <a href="/silk/" style="color:#5b21b6">/silk/</a> -
+                {% trans "you will see this request recorded there." %}
+            </p>
+        </div>
+        <!-- EXPLAIN ANALYZE -->
+        <div class="card">
+            <h3 style="margin-bottom:0.5rem;">4. EXPLAIN ANALYZE (PostgreSQL)</h3>
+            <p style="color:#64748b; font-size:0.9rem; margin-bottom:0.75rem;">
+                {% trans "Shows the actual execution plan from PostgreSQL - identifies seq scans, used indexes, estimated cost and real time. Run directly in psql or via QuerySet.explain() in Django." %}
+            </p>
+            <pre>
+# via Django (Django 2.1+)
+print(Book.objects.filter(published_year=2020).explain(verbose=True, analyze=True))
+
+# via psql inside container
+# docker compose exec db psql -U perfuser -d perfdb
+# EXPLAIN ANALYZE SELECT * FROM store_book WHERE published_year = 2020;</pre>
+            <p style="font-size:0.85rem; margin-top:0.75rem;">
+                {% trans "Look for Seq Scan (without index) vs Index Scan (with index). The published_year field has an index defined in the model - compare the plan with and without it." %}
+            </p>
+        </div>
+    </div>
+    <!-- back link -->
+    <div style="margin-top:1.5rem;">
+        <a href="{% url 'store:index' %}" style="color:#5b21b6;">← {% trans "Back to index" %}</a>
+    </div>
+{% endblock %}

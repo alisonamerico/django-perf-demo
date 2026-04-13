@@ -1,0 +1,33 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}SELECT * - Fast{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        {% trans "Unnecessary SELECT *" %} <span class="badge-fast">{% trans "FAST" %}</span>
+        <p>
+        </h1>
+        {% trans "only generates SELECT title, published_year, price FROM ... - without fetching heavy fields that won't be used." %}
+    </p>
+    <pre>books = Book.objects.only("title", "published_year", "price")[:50]</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Year" %}</th>
+                <th>{% trans "Price" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.published_year }}</td>
+                    <td>R$ {{ book.price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

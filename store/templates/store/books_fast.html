@@ -1,0 +1,31 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}N+1 FK — Rápido{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        N+1 ForeignKey <span class="badge-fast">{% trans "RÁPIDO" %}</span>
+    </h1>
+    <p>{% trans "select_related faz um JOIN e traz autor e livro em uma única query." %}</p>
+    <pre>books = Book.objects.select_related("author")[:50]</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Título" %}</th>
+                <th>{% trans "Autor" %}</th>
+                <th>{% trans "Ano" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author.name }}</td>
+                    <td>{{ book.published_year }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executadas" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

@@ -1,0 +1,784 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}
+    {% trans "Documentation" %} - {% trans "Django Performance" %}
+{% endblock %}
+{% block extra_style %}
+    <link rel="stylesheet" href="{% static 'store/css/docs.css' %}">
+{% endblock %}
+{% block content %}
+    <!-- Quick navigation -->
+    <h1 class="page-title">{% trans "Documentation" %} - {% trans "Django Performance" %}</h1>
+    <p style="color:#64748b; margin-bottom:1.5rem; font-size:0.95rem;">
+        {% trans "Practical reference on the most common performance problems in Django queries, how to identify them and how to fix them." %}
+    </p>
+    <nav class="doc-nav">
+        <a href="#n1-fk">{% trans "N+1 ForeignKey" %}</a>
+        <a href="#n1-m2m">{% trans "N+1 ManyToMany" %}</a>
+        <a href="#select-star">SELECT *</a>
+        <a href="#len-vs-count">len() vs count()</a>
+        <a href="#pagination">{% trans "Pagination" %}</a>
+        <a href="#select-related">select_related</a>
+        <a href="#prefetch-related">prefetch_related</a>
+        <a href="#only-defer">only() e defer()</a>
+        <a href="#values">values() e values_list()</a>
+        <a href="#annotate">annotate()</a>
+        <a href="#indices">{% trans "Indexes" %}</a>
+        <a href="#tools">{% trans "Tools" %}</a>
+        <a href="#summary">{% trans "Summary" %}</a>
+    </nav>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+     PROBLEMS
+ ══════════════════════════════════════════════════════════════════════════════ -->
+    <h2 style="font-size:1rem;
+               color:#94a3b8;
+               text-transform:uppercase;
+               letter-spacing:0.08em;
+               margin-bottom:1.5rem">{% trans "Problems" %}</h2>
+    <!-- N+1 ForeignKey -->
+    <section class="doc-section" id="n1-fk">
+        <h2>
+            <span class="toc-number">01</span>{% trans "N+1 Problem - ForeignKey" %} <span class="badge-problem">{% trans "PROBLEM" %}</span>
+        </h2>
+        <p>
+            {% trans "The N+1 problem is the most common in Django applications. It happens when you fetch a list of objects (1 query) and then access a relationship on each object inside a loop (N queries) - resulting in N+1 queries total." %}
+        </p>
+        <h3>{% trans "How it happens" %}</h3>
+        <p>
+            {% trans "Imagine you have 50 books and want to display the author name of each one. Without optimization, Django goes to the database to fetch each author individually:" %}
+        </p>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Problematic code" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">books = Book.objects.all()[:50]
+# In template:
+{% verbatim %}{% for book in books %}
+  {{ book.author.name }}  {# query here! #}
+{% endfor %}{% endverbatim %}</pre>
+            </div>
+            <div class="card card-bad">
+                <h4>{% trans "Generated queries" %}</h4>
+                <div class="query-visual">
+                    <div class="q-label">{% trans "query 1 - fetch books" %}</div>
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">store_book</span> <span class="kw">LIMIT</span> <span class="val">50</span>
+                    </div>
+                </div>
+                <div class="query-visual">
+                    <div class="q-label">{% trans "query 2, 3, 4 ... 51 - one author per book" %}</div>
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">store_author</span> <span class="kw">WHERE</span> id = <span class="val">1</span>
+                    </div>
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">store_author</span> <span class="kw">WHERE</span> id = <span class="val">2</span>
+                    </div>
+                    <div class="q-sql" style="color:#475569">{% trans "... 48 more identical queries" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="warning">
+            <strong>{% trans "Why is it dangerous?" %}</strong> {% trans "With 50 books it's 51 queries. With 1000 books it's 1001. The number grows linearly with the data - in production this can crash the database." %}
+        </div>
+        <h3>{% trans "How to identify" %}</h3>
+        <ul>
+            <li>{% trans "Django Debug Toolbar shows a high number of similar queries" %}</li>
+            <li>{% trans "Silk displays repeated queries with almost identical SQL" %}</li>
+            <li>
+                <code>connection.queries</code> shows multiple queries <code>WHERE id = N</code> for the same table
+            </li>
+        </ul>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:books_slow' %}" class="demo-link slow">{% trans "See N+1 FK in action" %}</a>
+            <a href="{% url 'store:books_fast' %}" class="demo-link">{% trans "See solution" %}</a>
+        </div>
+    </section>
+    <!-- N+1 ManyToMany -->
+    <section class="doc-section" id="n1-m2m">
+        <h2>
+            <span class="toc-number">02</span>{% trans "N+1 Problem - ManyToMany" %} <span class="badge-problem">{% trans "PROBLEM" %}</span>
+        </h2>
+        <p>
+            {% trans "The same N+1 occurs with ManyToMany relationships. The difference is that Django uses an intermediate table and accessing the relationship always triggers a new query, even if the data was already loaded before." %}
+        </p>
+        <h3>{% trans "How it happens" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Problematic code" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">books = Book.objects.all()[:50]
+# In template:
+{% verbatim %}{% for book in books %}
+  {% for tag in book.tags.all %}  {# query here! #}
+    {{ tag.name }}
+  {% endfor %}
+{% endfor %}{% endverbatim %}</pre>
+            </div>
+            <div class="card card-bad">
+                <h4>{% trans "Generated queries" %}</h4>
+                <div class="query-visual">
+                    <div class="q-label">{% trans "query 1 - fetch books" %}</div>
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">store_book</span> <span class="kw">LIMIT</span> <span class="val">50</span>
+                    </div>
+                </div>
+                <div class="query-visual">
+                    <div class="q-label">{% trans "queries 2 to 51 - tags of each book via intermediate table" %}</div>
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> t.* <span class="kw">FROM</span> <span class="tbl">store_tag</span> t
+                    </div>
+                    <div class="q-sql">
+                        <span class="kw">INNER JOIN</span> <span class="tbl">store_book_tags</span> bt <span class="kw">ON</span> t.id = bt.tag_id
+                    </div>
+                    <div class="q-sql">
+                        <span class="kw">WHERE</span> bt.book_id = <span class="val">1</span>
+                    </div>
+                    <div class="q-sql" style="color:#475569">{% trans "... 49 more queries" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="info">
+            <strong>{% trans "Difference from FK:" %}</strong> {% trans "With ForeignKey the JOIN can be done in the same query. With ManyToMany there are always at least 2 queries - but 2 is infinitely better than N+1." %}
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:tags_slow' %}" class="demo-link slow">{% trans "See N+1 M2M in action" %}</a>
+            <a href="{% url 'store:tags_fast' %}" class="demo-link">{% trans "See solution" %}</a>
+        </div>
+    </section>
+    <!-- SELECT * -->
+    <section class="doc-section" id="select-star">
+        <h2>
+            <span class="toc-number">03</span>{% trans "Unnecessary SELECT *" %} <span class="badge-problem">{% trans "PROBLEM" %}</span>
+        </h2>
+        <p>
+            {% trans "By default, Django fetches all model fields (SELECT *). If your listing uses only 3 of the 10 available fields, you are transmitting unnecessary data between the database and the application - wasting I/O, memory and serialization time." %}
+        </p>
+        <h3>{% trans "How it happens" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Problematic code" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">books = Book.objects.all()
+# loads: id, title, synopsis (TextField!),
+# published_year, price, author_id
+# even when using only title and price</pre>
+            </div>
+            <div class="card card-bad">
+                <h4>{% trans "Generated query" %}</h4>
+                <div class="query-visual">
+                    <div class="q-sql">
+                        <span class="kw">SELECT</span> id, title, synopsis, published_year,
+                    </div>
+                    <div class="q-sql">price, author_id</div>
+                    <div class="q-sql">
+                        <span class="kw">FROM</span> <span class="tbl">store_book</span>
+                    </div>
+                    <div class="q-sql" style="color:#ef4444; margin-top:4px">{% trans "↑ synopsis can have kilobytes per row" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="warning">
+            <strong>{% trans "Worst case:" %}</strong> {% trans "Fields like TextField, JSONField and BinaryField can contain megabytes of data. Loading them unnecessarily is one of the most costly mistakes in production." %}
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:fields_slow' %}" class="demo-link slow">{% trans "See SELECT * in action" %}</a>
+            <a href="{% url 'store:fields_fast' %}" class="demo-link">{% trans "See solution" %}</a>
+        </div>
+    </section>
+    <!-- len() vs count() -->
+    <section class="doc-section" id="len-vs-count">
+        <h2>
+            <span class="toc-number">04</span>len() vs count() <span class="badge-problem">{% trans "PROBLEM" %}</span>
+        </h2>
+        <p>
+            {% trans "When you only need the number of records, using len() on a queryset forces Django to execute SELECT * and instantiate all objects in memory just to count them. The database already knows how to do this much more efficiently via COUNT(*)." %}
+        </p>
+        <h3>{% trans "Direct comparison" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "len() - loads everything" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">books = Book.objects.all()
+total = len(books)
+# SELECT * FROM store_book
+# instantiates N Book objects
+# counts in Python memory</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "count() - delegates to database" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">total = Book.objects.count()
+# SELECT COUNT(*) FROM store_book
+# returns an integer
+# no objects instantiated</pre>
+            </div>
+        </div>
+        <h3>{% trans "Other common cases of the same pattern" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Check existence - wrong" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">if len(Book.objects.filter(author=a)) > 0:
+    ...
+# or
+if Book.objects.filter(author=a):
+    ...</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Check existence - correct" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">if Book.objects.filter(author=a).exists():
+    ...
+# SELECT 1 FROM store_book
+# WHERE author_id = N LIMIT 1</pre>
+            </div>
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:count_slow' %}" class="demo-link slow">{% trans "See len() in action" %}</a>
+            <a href="{% url 'store:count_fast' %}" class="demo-link">{% trans "See solution" %}</a>
+        </div>
+    </section>
+    <!-- Pagination -->
+    <section class="doc-section" id="pagination">
+        <h2>
+            <span class="toc-number">05</span>{% trans "Missing pagination" %} <span class="badge-problem">{% trans "PROBLEM" %}</span>
+        </h2>
+        <p>
+            {% trans "Returning all records from a table in a single request is a classic mistake. Besides overloading the database with a SELECT without LIMIT, you load all objects into the application memory and send a huge HTTP response to the client." %}
+        </p>
+        <h3>{% trans "Impact in numbers" %}</h3>
+        <ul>
+            <li>{% trans "1,000 books × 500 bytes each = ~500 KB per request" %}</li>
+            <li>{% trans "10,000 books = ~5 MB - can timeout on client" %}</li>
+            <li>{% trans "100,000 books = ~50 MB - can crash the application" %}</li>
+        </ul>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Without pagination" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">books = Book.objects.all()
+# SELECT * FROM store_book
+# returns ALL records</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "With pagination" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">paginator = Paginator(qs, per_page=20)
+page = paginator.get_page(request.GET.get("page"))
+# SELECT * FROM store_book LIMIT 20 OFFSET 0</pre>
+            </div>
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:paginate_slow' %}" class="demo-link slow">{% trans "See without pagination" %}</a>
+            <a href="{% url 'store:paginate_fast' %}" class="demo-link">{% trans "See with pagination" %}</a>
+        </div>
+    </section>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+     SOLUTIONS
+ ══════════════════════════════════════════════════════════════════════════════ -->
+    <h2 style="font-size:1rem;
+               color:#94a3b8;
+               text-transform:uppercase;
+               letter-spacing:0.08em;
+               margin-bottom:1.5rem;
+               margin-top:1rem">{% trans "Solutions" %}</h2>
+    <!-- select_related -->
+    <section class="doc-section" id="select-related">
+        <h2>
+            <span class="toc-number">06</span>select_related <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            <code>select_related</code> {% trans "select_related solves N+1 for ForeignKey and OneToOneField relationships. It instructs Django to perform a SQL JOIN, bringing the related object in the same query - without any extra queries." %}
+        </p>
+        <h3>{% trans "How it works internally" %}</h3>
+        <div class="query-visual">
+            <div class="q-label">Book.objects.select_related("author")[:50]</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> b.id, b.title, b.published_year, b.price,
+            </div>
+            <div class="q-sql">a.id, a.name, a.country, a.born_year</div>
+            <div class="q-sql">
+                <span class="kw">FROM</span> <span class="tbl">store_book</span> b
+            </div>
+            <div class="q-sql">
+                <span class="kw">INNER JOIN</span> <span class="tbl">store_author</span> a <span class="kw">ON</span> b.author_id = a.id
+            </div>
+            <div class="q-sql">
+                <span class="kw">LIMIT</span> <span class="val">50</span>
+            </div>
+        </div>
+        <h3>{% trans "Usage examples" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-good">
+                <h4>{% trans "Simple FK" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.select_related("author")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Chained FK (author → country)" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.select_related("author__country")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Multiple relationships" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.select_related("author", "publisher")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "All FKs (careful with cartesian product)" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.select_related()</pre>
+            </div>
+        </div>
+        <h3>{% trans "When to use" %}</h3>
+        <ul>
+            <li>
+                <code>ForeignKey</code> {% trans "ForeignKey and OneToOneField relationships" %}
+            </li>
+            <li>{% trans "When you always access the related object" %}</li>
+            <li>{% trans "When the relationship is to a single object (not a list)" %}</li>
+        </ul>
+        <div class="warning">
+            <strong>{% trans "Warning:" %}</strong> {% blocktrans %}Don't use select_related() without arguments on models with many FKs - it JOINs all of them, which can generate huge queries and slow things down. Prefer listing explicitly: select_related("author", "category").{% endblocktrans %}
+        </div>
+    </section>
+    <!-- prefetch_related -->
+    <section class="doc-section" id="prefetch-related">
+        <h2>
+            <span class="toc-number">07</span>prefetch_related <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            <code>prefetch_related</code> {% trans "prefetch_related solves N+1 for ManyToManyField and reverse ForeignKey relationships (back relationships). Unlike select_related, it performs 2 separate queries and combines the results in Python - it's not possible to use JOIN for many-to-many relationships." %}
+        </p>
+        <h3>{% trans "How it works internally" %}</h3>
+        <div class="query-visual">
+            <div class="q-label">{% trans "query 1 - fetch books" %}</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">store_book</span> <span class="kw">LIMIT</span> <span class="val">50</span>
+            </div>
+        </div>
+        <div class="query-visual">
+            <div class="q-label">{% trans "query 2 - fetch ALL tags for books at once" %}</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> t.*, bt.book_id <span class="kw">FROM</span> <span class="tbl">store_tag</span> t
+            </div>
+            <div class="q-sql">
+                <span class="kw">INNER JOIN</span> <span class="tbl">store_book_tags</span> bt <span class="kw">ON</span> t.id = bt.tag_id
+            </div>
+            <div class="q-sql">
+                <span class="kw">WHERE</span> bt.book_id <span class="kw">IN</span> (<span class="val">1, 2, 3, ..., 50</span>)
+            </div>
+            <div class="q-sql" style="color:#86efac; margin-top:4px">↑ Django combines with books in memory</div>
+        </div>
+        <h3>{% trans "Usage examples" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-good">
+                <h4>ManyToMany</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.prefetch_related("tags")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Reverse FK (reviews of each book)" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.prefetch_related("reviews")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Combined with select_related" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.select_related("author")\
+            .prefetch_related("tags", "reviews")</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Prefetch with custom queryset" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">from django.db.models import Prefetch
+Book.objects.prefetch_related(
+    Prefetch("reviews",
+        queryset=Review.objects.filter(rating__gte=4),
+        to_attr="top_reviews"
+    )
+)</pre>
+            </div>
+        </div>
+        <h3>{% trans "select_related vs prefetch_related - visual difference" %}</h3>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Criteria" %}</th>
+                    <th>select_related</th>
+                    <th>prefetch_related</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% trans "Relationship type" %}</td>
+                    <td>FK, OneToOne</td>
+                    <td>M2M, reverse FK</td>
+                </tr>
+                <tr>
+                    <td>{% trans "SQL mechanism" %}</td>
+                    <td>{% trans "JOIN in one query" %}</td>
+                    <td>{% trans "2 separate queries + Python" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Number of queries" %}</td>
+                    <td>1</td>
+                    <td>{% trans "2 (independent of N)" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Where data is combined" %}</td>
+                    <td>{% trans "Database" %}</td>
+                    <td>{% trans "Python (in memory)" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Supports extra filters" %}</td>
+                    <td>{% trans "No" %}</td>
+                    <td>{% trans "Yes, via Prefetch()" %}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="tip">
+            <strong>{% trans "Practical rule:" %}</strong> {% trans "If the relationship points to one object use select_related. If it points to many objects use prefetch_related." %}
+        </div>
+    </section>
+    <!-- only() e defer() -->
+    <section class="doc-section" id="only-defer">
+        <h2>
+            <span class="toc-number">08</span>only() and defer() <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            {% trans "Both solve the unnecessary SELECT * problem, but from opposite perspectives: only() specifies which fields to include, defer() specifies which fields to exclude." %}
+        </p>
+        <div class="comparison-grid">
+            <div class="card card-good">
+                <h4>{% trans "only() - include only these" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.only("title", "price")
+# SELECT id, title, price FROM store_book
+# id is always included automatically</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "defer() - exclude only these" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.defer("synopsis")
+# SELECT id, title, price, published_year,
+#        author_id FROM store_book
+# synopsis is loaded only if accessed</pre>
+            </div>
+        </div>
+        <h3>{% trans "The lazy behavior of defer()" %}</h3>
+        <p>
+            {% trans "Fields deferred with defer() are not lost - they are loaded automatically if you access them, but this triggers an extra query per object. Use defer() only when you're sure the field will rarely be accessed." %}
+        </p>
+        <div class="query-visual">
+            <div class="q-label">book = Book.objects.defer("synopsis").get(id=1)</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> id, title, price <span class="kw">FROM</span> <span class="tbl">store_book</span> <span class="kw">WHERE</span> id = <span class="val">1</span>
+            </div>
+            <div class="q-label" style="margin-top:8px">{% trans "access triggers new query!" %}</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> synopsis <span class="kw">FROM</span> <span class="tbl">store_book</span> <span class="kw">WHERE</span> id = <span class="val">1</span>
+            </div>
+        </div>
+        <div class="tip">
+            <strong>{% trans "When to use each:" %}</strong> {% trans "Use only() when you know exactly which fields you need (listings, APIs). Use defer() when you want to exclude only a specific heavy field (like a TextField with HTML) but need the rest." %}
+        </div>
+    </section>
+    <!-- values() e values_list() -->
+    <section class="doc-section" id="values">
+        <h2>
+            <span class="toc-number">09</span>values() and values_list() <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            {% trans "When you don't need model instances - only raw data - values() and values_list() return dictionaries and tuples directly, without the overhead of instantiating Python objects." %}
+        </p>
+        <div class="comparison-grid">
+            <div class="card card-good">
+                <h4>{% trans "values() - returns dictionaries" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.values("id", "title", "price")
+# [
+#   {"id": 1, "title": "Django", "price": 49.90},
+#   {"id": 2, "title": "Python", "price": 39.90},
+# ]</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "values_list() - returns tuples" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">Book.objects.values_list("id", "title")
+# [(1, "Django"), (2, "Python")]
+
+# flat=True for a single column
+Book.objects.values_list("title", flat=True)
+# ["Django", "Python"]</pre>
+            </div>
+        </div>
+        <h3>{% trans "Ideal use cases" %}</h3>
+        <ul>
+            <li>{% trans "Populate an HTML select with id and name" %}</li>
+            <li>{% trans "Export data to CSV or spreadsheet" %}</li>
+            <li>{% trans "Pass data to a serializer (DRF, JSON)" %}</li>
+            <li>
+                {% trans "Check if values exist" %}: <code>values_list("email", flat=True)</code>
+            </li>
+        </ul>
+        <div class="warning">
+            <strong>{% trans "Limitation:" %}</strong> {% trans "Objects returned by values() and values_list() are simple dictionaries/tuples - you cannot call model methods on them (like get_absolute_url() or save()). If you need methods, use only() instead." %}
+        </div>
+    </section>
+    <!-- annotate() -->
+    <section class="doc-section" id="annotate">
+        <h2>
+            <span class="toc-number">10</span>annotate() <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            {% trans "annotate() adds calculated fields directly in the SQL query, using database aggregation functions. Instead of loading all related objects into Python to count, sum, or calculate averages, you delegate this operation to the database - which is much more efficient for this." %}
+        </p>
+        <h3>{% trans "Practical examples" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-bad">
+                <h4>{% trans "Count reviews in Python - wrong" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">for book in Book.objects.prefetch_related("reviews"):
+    # still loads all Review objects
+    total = book.reviews.count()  # extra query!</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Count reviews in database - correct" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">from django.db.models import Count, Avg
+books = Book.objects.annotate(
+    num_reviews=Count("reviews"),
+    avg_rating=Avg("reviews__rating"),
+)
+# access without extra query
+book.num_reviews  # already in the object
+book.avg_rating</pre>
+            </div>
+        </div>
+        <h3>{% trans "Available aggregation functions" %}</h3>
+        <pre>from django.db.models import Count, Sum, Avg, Max, Min, StdDev, Variance
+# count
+Book.objects.annotate(num_tags=Count("tags"))
+
+# average price by author
+Author.objects.annotate(avg_price=Avg("books__price"))
+
+# most expensive book per author
+Author.objects.annotate(max_price=Max("books__price"))
+
+# total sales
+Book.objects.annotate(total_sales=Sum("orders__quantity"))</pre>
+        <div class="query-visual">
+            <div class="q-label">Book.objects.annotate(num_reviews=Count("reviews"))[:5]</div>
+            <div class="q-sql">
+                <span class="kw">SELECT</span> b.*, <span class="kw">COUNT</span>(r.id) <span class="kw">AS</span> num_reviews
+            </div>
+            <div class="q-sql">
+                <span class="kw">FROM</span> <span class="tbl">store_book</span> b
+            </div>
+            <div class="q-sql">
+                <span class="kw">LEFT OUTER JOIN</span> <span class="tbl">store_review</span> r <span class="kw">ON</span> b.id = r.book_id
+            </div>
+            <div class="q-sql">
+                <span class="kw">GROUP BY</span> b.id
+            </div>
+            <div class="q-sql">
+                <span class="kw">LIMIT</span> <span class="val">5</span>
+            </div>
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:count_fast' %}" class="demo-link">{% trans "See annotate() in action" %}</a>
+        </div>
+    </section>
+    <!-- Indexes -->
+    <section class="doc-section" id="indices">
+        <h2>
+            <span class="toc-number">11</span>{% trans "Indexes" %} <span class="badge-solution">{% trans "SOLUTION" %}</span>
+        </h2>
+        <p>
+            {% trans "Indexes speed up search and filter queries. Without an index, the database does a Seq Scan - reads row by row until it finds what it needs. With an index, it does an Index Scan - goes directly to the data like a dictionary." %}
+        </p>
+        <h3>{% trans "How to define in Django" %}</h3>
+        <div class="comparison-grid">
+            <div class="card card-good">
+                <h4>{% trans "Simple index on one field" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">class Book(models.Model):
+    published_year = models.IntegerField(
+        db_index=True  # creates index automatically
+    )</pre>
+            </div>
+            <div class="card card-good">
+                <h4>{% trans "Composite index via Meta" %}</h4>
+                <pre style="margin:0; font-size:0.8rem;">class Book(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["published_year", "price"],
+                name="book_year_price_idx"
+            ),
+        ]</pre>
+            </div>
+        </div>
+        <h3>{% trans "How to check if the index is being used" %}</h3>
+        <pre>
+# via Django shell
+from django.db import connection
+qs = Book.objects.filter(published_year=2020)
+print(qs.explain(verbose=True, analyze=True))
+
+# via psql
+docker compose exec db psql -U perfuser -d perfdb
+EXPLAIN ANALYZE SELECT * FROM store_book WHERE published_year = 2020;</pre>
+        <div class="tip">
+            <strong>{% trans "When to create an index:" %}</strong> {% trans "on fields used in frequent filter(), order_by(), JOIN and DISTINCT. ForeignKeys already have automatic index in Django. Avoid indexing fields that change frequently - indexes have a write cost." %}
+        </div>
+    </section>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+     TOOLS
+ ══════════════════════════════════════════════════════════════════════════════ -->
+    <h2 style="font-size:1rem;
+               color:#94a3b8;
+               text-transform:uppercase;
+               letter-spacing:0.08em;
+               margin-bottom:1.5rem;
+               margin-top:1rem">{% trans "Tools" %}</h2>
+    <section class="doc-section" id="tools">
+        <h2>
+            <span class="toc-number">12</span>{% trans "Analysis Tools" %} <span class="badge-tool">{% trans "TOOL" %}</span>
+        </h2>
+        <h3>Django Debug Toolbar</h3>
+        <p>
+            {% trans "Visual panel that appears on all pages with DEBUG=True. Shows number of queries, generated SQL, time per query and stack trace." %}
+        </p>
+        <pre>
+pip install django-debug-toolbar
+
+# settings.py
+INSTALLED_APPS += ["debug_toolbar"]
+MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware", ...MIDDLEWARE]
+INTERNAL_IPS = ["127.0.0.1"]
+
+# urls.py
+path("__debug__/", include(debug_toolbar.urls))</pre>
+        <h3>Django Silk</h3>
+        <p>
+            {% trans "Persistent profiling dashboard. Records all requests and database queries - useful for comparing performance over time and identifying slow endpoints." %}
+        </p>
+        <pre>
+pip install django-silk
+
+# settings.py
+INSTALLED_APPS += ["silk"]
+MIDDLEWARE = ["silk.middleware.SilkyMiddleware", ...MIDDLEWARE]
+SILKY_PYTHON_PROFILER = True
+
+# urls.py
+path("silk/", include("silk.urls", namespace="silk"))</pre>
+        <p>
+            {% trans "Access at" %} <a href="/silk/" style="color:#5b21b6">/silk/</a>.
+        </p>
+        <h3>connection.queries</h3>
+        <p>
+            {% trans "Python list with all queries from the current request. Only available with DEBUG=True. Useful in tests and diagnostic scripts." %}
+        </p>
+        <pre>
+from django.db import connection
+
+# see all queries
+for q in connection.queries:
+    print(q["sql"])
+    print(q["time"])
+
+# count
+print(len(connection.queries))</pre>
+        <h3>QuerySet.explain()</h3>
+        <p>{% trans "Returns the database execution plan for the query. Available since Django 2.1." %}</p>
+        <pre>
+# simple plan
+print(Book.objects.filter(published_year=2020).explain())
+
+# detailed plan with real time (PostgreSQL)
+print(Book.objects.filter(published_year=2020).explain(
+    verbose=True,
+    analyze=True,
+    buffers=True,
+))</pre>
+        <div class="info">
+            <strong>{% trans "What to look for in EXPLAIN:" %}</strong> <code>Seq Scan</code> {% trans "Seq Scan indicates the database read the entire table (may need an index). Index Scan indicates the index was used. Hash Join and Nested Loop indicate how JOINs are being executed. cost= indicates the estimated cost (lower is better)." %}
+        </div>
+        <div style="margin-top:1rem;">
+            <a href="{% url 'store:tools' %}" class="demo-link">{% trans "See tools live" %}</a>
+        </div>
+    </section>
+    <!-- Summary -->
+    <section class="doc-section" id="summary">
+        <h2>
+            <span class="toc-number">13</span>{% trans "Summary - when to use each technique" %}
+        </h2>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Situation" %}</th>
+                    <th>{% trans "Technique" %}</th>
+                    <th>{% trans "Result" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% trans "Accessing book.author in loop" %}</td>
+                    <td>
+                        <code>select_related("author")</code>
+                    </td>
+                    <td>{% trans "N+1 → 1 query (JOIN)" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Accessing book.tags.all() in loop" %}</td>
+                    <td>
+                        <code>prefetch_related("tags")</code>
+                    </td>
+                    <td>{% trans "N+1 → 2 queries" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Listing using only 3 of 10 fields" %}</td>
+                    <td>
+                        <code>only("f1", "f2", "f3")</code>
+                    </td>
+                    <td>{% trans "SELECT * → SELECT f1, f2, f3" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Exclude only one heavy field" %}</td>
+                    <td>
+                        <code>defer("synopsis")</code>
+                    </td>
+                    <td>{% trans "synopsis loaded on demand" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Need only dictionaries/tuples" %}</td>
+                    <td>
+                        <code>values()</code> / <code>values_list()</code>
+                    </td>
+                    <td>{% trans "Without instantiating Python objects" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Count records" %}</td>
+                    <td>
+                        <code>.count()</code>
+                    </td>
+                    <td>{% trans "SELECT COUNT(*) without loading data" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Check existence" %}</td>
+                    <td>
+                        <code>.exists()</code>
+                    </td>
+                    <td>{% trans "SELECT 1 LIMIT 1" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Count/sum relationships" %}</td>
+                    <td>
+                        <code>annotate(Count(...))</code>
+                    </td>
+                    <td>{% trans "Calculated in database, no Python loops" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Slow filters on large columns" %}</td>
+                    <td>
+                        <code>db_index=True</code>
+                    </td>
+                    <td>{% trans "Seq Scan → Index Scan" %}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Table returning all records" %}</td>
+                    <td>
+                        <code>Paginator(qs, per_page=N)</code>
+                    </td>
+                    <td>{% trans "LIMIT/OFFSET - only current page" %}</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <div style="margin-top:2rem;
+                padding-top:1.5rem;
+                border-top:1px solid #e2e8f0">
+        <a href="{% url 'store:index' %}" style="color:#5b21b6;">← {% trans "Back to practical examples" %}</a>
+    </div>
+{% endblock %}

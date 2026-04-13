@@ -1,0 +1,1019 @@
+# Portuguese translations for Django Performance Demo.
+# Copyright (C) 2026
+# This file is distributed under the same license as the django-perf-demo package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-perf-demo 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-09 12:00+0000\n"
+"PO-Revision-Date: 2026-04-09 12:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Portuguese (Brazil)\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Django Performance Demo"
+msgstr "Demo de Performance no Django"
+
+msgid "Overview"
+msgstr "Visão Geral"
+
+msgid "Interactive Playground"
+msgstr "Playground Interativo"
+
+msgid "Getting Started"
+msgstr "Começar"
+
+msgid "Performance Problems"
+msgstr "Problemas de Performance"
+
+msgid "Tools"
+msgstr "Ferramentas"
+
+msgid "Debug & Profiling"
+msgstr "Debug & Profiling"
+
+msgid "Full Documentation"
+msgstr "Documentação Completa"
+
+msgid "Django ORM Performance"
+msgstr "Performance no Django ORM"
+
+msgid "Learn to identify and fix the 5 most common performance problems in Django applications. Interactive playground with real-time statistics."
+msgstr "Aprenda a identificar e resolver os 5 problemas mais comuns de performance em aplicações Django. Playground interativo com estatísticas em tempo real."
+
+msgid "Try the Playground"
+msgstr "Testar no Playground"
+
+msgid "N+1 Query"
+msgstr "N+1 Query"
+
+msgid "Understand how unnecessary queries are triggered when accessing ForeignKey and ManyToMany relationships."
+msgstr "Entenda como queries desnecessárias são disparadas ao acessar relacionamentos ForeignKey e ManyToMany."
+
+msgid "select_related"
+msgstr "select_related"
+
+msgid "Use JOINs to fetch related data in a single query. Ideal for ForeignKey."
+msgstr "Use JOINs para buscar dados relacionados em uma única query. Ideal para ForeignKey."
+
+msgid "prefetch_related"
+msgstr "prefetch_related"
+
+msgid "Fetches relationships in separate queries but caches everything together. Perfect for ManyToMany."
+msgstr "Busca relacionamentos em queries separadas mas cacheia tudo junto. Perfeito para ManyToMany."
+
+msgid "only() & defer()"
+msgstr "only() & defer()"
+
+msgid "Load only the fields you need, avoiding unnecessary SELECT *."
+msgstr "Carregue apenas os campos necessários, evitando SELECT * desnecessários."
+
+msgid "count()"
+msgstr "count()"
+
+msgid "Use COUNT(*) in the database instead of loading everything into memory with len()."
+msgstr "Use COUNT(*) no banco ao invés de carregar tudo na memória com len()."
+
+msgid "Paginator"
+msgstr "Paginator"
+
+msgid "Load only what's needed per page, avoiding memory leaks and timeouts."
+msgstr "Carregue apenas o necessário por página, evitando memory leaks e timeouts."
+
+msgid "The 5 Performance Problems"
+msgstr "Os 5 Problemas de Performance"
+
+msgid "Problem"
+msgstr "Problema"
+
+msgid "Solution Technique"
+msgstr "Técnica de Solução"
+
+msgid "Action"
+msgstr "Ação"
+
+msgid "View demo"
+msgstr "Ver demo"
+
+
+msgid "Test each problem interactively. Run \"slow\" and \"fast\" versions and compare:"
+msgstr "Teste cada problema de forma interativa. Execute as versões \"lenta\" e \"rápida\" e compare:"
+
+msgid "Number of executed queries"
+msgstr "Número de queries executadas"
+
+msgid "Execution time (ms)"
+msgstr "Tempo de execução (ms)"
+
+msgid "Generated SQL"
+msgstr "SQL gerado"
+
+msgid "Access Playground"
+msgstr "Acessar Playground"
+
+
+msgid "Detailed reference with:"
+msgstr "Referência detalhada com:"
+
+msgid "Explanation of each problem"
+msgstr "Explicação de cada problema"
+
+msgid "Code before and after"
+msgstr "Código antes e depois"
+
+msgid "When to use each technique"
+msgstr "Quando usar cada técnica"
+
+msgid "Debug Tools"
+msgstr "Ferramentas de Debug"
+
+msgid "View Documentation"
+msgstr "Ver Documentação"
+
+msgid "Side panel with SQL, query time, cache and more."
+msgstr "Painel lateral com SQL, tempo de queries, cache e mais."
+
+msgid "Profiling dashboard with request history."
+msgstr "Dashboard de profiling com histórico de requests."
+
+msgid "PostgreSQL execution plan for query optimization."
+msgstr "Plano de execução do PostgreSQL para otimização de queries."
+
+msgid "See how to use"
+msgstr "Ver como usar"
+
+msgid "Documentation - Django Performance"
+msgstr "Documentação - Performance no Django"
+
+msgid "Practical reference on the most common performance problems in Django queries, how to identify them and how to fix them."
+msgstr "Referência prática sobre os problemas mais comuns de performance em queries Django, como identificá-los e como corrigi-los."
+
+msgid "Problems"
+msgstr "Problemas"
+
+msgid "Solutions"
+msgstr "Soluções"
+
+
+msgid "Summary"
+msgstr "Resumo"
+
+msgid "N+1 Problem - ForeignKey"
+msgstr "Problema N+1 - ForeignKey"
+
+msgid "PROBLEM"
+msgstr "PROBLEMA"
+
+msgid "The N+1 problem is the most common in Django applications. It happens when you fetch a list of objects (1 query) and then access a relationship on each object inside a loop (N queries) - resulting in N+1 queries total."
+msgstr "O problema N+1 é o mais comum em aplicações Django. Ele acontece quando você busca uma lista de objetos (1 query) e depois acessa um relacionamento em cada objeto dentro de um loop (N queries) - resultando em N+1 queries no total."
+
+msgid "How it happens"
+msgstr "Como acontece"
+
+msgid "Imagine you have 50 books and want to display the author name of each one. Without optimization, Django goes to the database to fetch each author individually:"
+msgstr "Imagine que você tem 50 livros e quer exibir o nome do autor de cada um. Sem otimização, o Django vai ao banco buscar cada autor individualmente:"
+
+msgid "Problematic code"
+msgstr "Código problemático"
+
+msgid "Generated queries"
+msgstr "Queries geradas"
+
+msgid "query 1 - fetch books"
+msgstr "query 1 - busca os livros"
+
+msgid "query 2, 3, 4 ... 51 - one author per book"
+msgstr "query 2, 3, 4 ... 51 - um autor por livro"
+
+msgid "... 48 more identical queries"
+msgstr "... mais 48 queries idênticas"
+
+msgid "Why is it dangerous?"
+msgstr "Por que é perigoso?"
+
+msgid "With 50 books it's 51 queries. With 1000 books it's 1001. The number grows linearly with the data - in production this can crash the database."
+msgstr "Com 50 livros são 51 queries. Com 1000 livros são 1001. O número cresce linearmente com os dados - em produção isso pode derrubar o banco."
+
+msgid "How to identify"
+msgstr "Como identificar"
+
+msgid "Django Debug Toolbar shows a high number of similar queries"
+msgstr "Django Debug Toolbar mostra um número alto de queries similares"
+
+msgid "Silk displays repeated queries with almost identical SQL"
+msgstr "Silk exibe queries repetidas com SQL quase idêntico"
+
+msgid "connection.queries shows multiple queries WHERE id = N for the same table"
+msgstr "connection.queries mostra várias queries WHERE id = N para a mesma tabela"
+
+msgid "See N+1 FK in action"
+msgstr "Ver N+1 FK em ação"
+
+msgid "See solution"
+msgstr "Ver solução"
+
+msgid "N+1 Problem - ManyToMany"
+msgstr "Problema N+1 - ManyToMany"
+
+msgid "The same N+1 occurs with ManyToMany relationships. The difference is that Django uses an intermediate table and accessing the relationship always triggers a new query, even if the data was already loaded before."
+msgstr "O mesmo N+1 ocorre com relações ManyToMany. A diferença é que o Django usa uma tabela intermediária e o acesso ao relacionamento sempre gera uma nova query, mesmo que os dados já tenham sido carregados antes."
+
+msgid "queries 2 to 51 - tags of each book via intermediate table"
+msgstr "queries 2 a 51 - tags de cada livro via tabela intermediária"
+
+msgid "... 49 more queries"
+msgstr "... mais 49 queries"
+
+msgid "Difference from FK:"
+msgstr "Diferença do FK:"
+
+msgid "With ForeignKey the JOIN can be done in the same query. With ManyToMany there are always at least 2 queries - but 2 is infinitely better than N+1."
+msgstr "No ForeignKey o JOIN pode ser feito na mesma query. No ManyToMany são sempre pelo menos 2 queries - mas 2 é infinitamente melhor que N+1."
+
+msgid "See N+1 M2M in action"
+msgstr "Ver N+1 M2M em ação"
+
+msgid "Unnecessary SELECT *"
+msgstr "SELECT * desnecessário"
+
+msgid "By default, Django fetches all model fields (SELECT *). If your listing uses only 3 of the 10 available fields, you are transmitting unnecessary data between the database and the application - wasting I/O, memory and serialization time."
+msgstr "Por padrão, o Django busca todos os campos do modelo (SELECT *). Se a sua listagem usa apenas 3 dos 10 campos disponíveis, você está trafegando dados desnecessários entre o banco e a aplicação - desperdiçando I/O, memória e tempo de serialização."
+
+msgid "loads: id, title, synopsis (TextField!), published_year, price, author_id even when using only title and price"
+msgstr "carrega: id, title, synopsis (TextField!), published_year, price, author_id mesmo usando só title e price"
+
+msgid "Generated query"
+msgstr "Query gerada"
+
+msgid "↑ synopsis can have kilobytes per row"
+msgstr "↑ synopsis pode ter kilobytes por linha"
+
+msgid "Worst case:"
+msgstr "Pior caso:"
+
+msgid "Fields like TextField, JSONField and BinaryField can contain megabytes of data. Loading them unnecessarily is one of the most costly mistakes in production."
+msgstr "Campos como TextField, JSONField e BinaryField podem conter megabytes de dados. Carregá-los sem necessidade é um dos erros mais custosos em produção."
+
+msgid "See SELECT * in action"
+msgstr "Ver SELECT * em ação"
+
+msgid "len() vs count()"
+msgstr "len() vs count()"
+
+msgid "When you only need the number of records, using len() on a queryset forces Django to execute SELECT * and instantiate all objects in memory just to count them. The database already knows how to do this much more efficiently via COUNT(*)."
+msgstr "Quando você precisa apenas do número de registros, usar len() num queryset força o Django a executar SELECT * e instanciar todos os objetos em memória só para contar quantos são. O banco de dados já sabe fazer isso com muito mais eficiência via COUNT(*)."
+
+msgid "Direct comparison"
+msgstr "Comparação direta"
+
+msgid "len() - loads everything"
+msgstr "len() - carrega tudo"
+
+msgid "SELECT * FROM store_book instantiates N Book objects counts in Python memory"
+msgstr "SELECT * FROM store_book instancia N objetos Book conta na memória do Python"
+
+msgid "count() - delegates to database"
+msgstr "count() - delega ao banco"
+
+msgid "SELECT COUNT(*) FROM store_book returns an integer no objects instantiated"
+msgstr "SELECT COUNT(*) FROM store_book retorna um inteiro nenhum objeto instanciado"
+
+msgid "Other common cases of the same pattern"
+msgstr "Outros casos comuns do mesmo padrão"
+
+msgid "Check existence - wrong"
+msgstr "Verificar existência - errado"
+
+msgid "Check existence - correct"
+msgstr "Verificar existência - correto"
+
+msgid "See len() in action"
+msgstr "Ver len() em ação"
+
+msgid "Missing pagination"
+msgstr "Ausência de paginação"
+
+msgid "Returning all records from a table in a single request is a classic mistake. Besides overloading the database with a SELECT without LIMIT, you load all objects into the application memory and send a huge HTTP response to the client."
+msgstr "Retornar todos os registros de uma tabela em uma única requisição é um erro clássico. Além de sobrecarregar o banco com um SELECT sem LIMIT, você carrega todos os objetos na memória da aplicação e envia uma resposta HTTP enorme para o cliente."
+
+msgid "Impact in numbers"
+msgstr "O impacto em números"
+
+msgid "1,000 books × 500 bytes each = ~500 KB per request"
+msgstr "1.000 livros × 500 bytes cada = ~500 KB por requisição"
+
+msgid "10,000 books = ~5 MB - can timeout on client"
+msgstr "10.000 livros = ~5 MB - pode timeout no cliente"
+
+msgid "100,000 books = ~50 MB - can crash the application"
+msgstr "100.000 livros = ~50 MB - pode crashar a aplicação"
+
+msgid "Without pagination"
+msgstr "Sem paginação"
+
+msgid "returns ALL records"
+msgstr "retorna TODOS os registros"
+
+msgid "With pagination"
+msgstr "Com paginação"
+
+msgid "See without pagination"
+msgstr "Ver sem paginação"
+
+msgid "See with pagination"
+msgstr "Ver com paginação"
+
+msgid "SOLUTION"
+msgstr "SOLUÇÃO"
+
+msgid "select_related solves N+1 for ForeignKey and OneToOneField relationships. It instructs Django to perform a SQL JOIN, bringing the related object in the same query - without any extra queries."
+msgstr "select_related resolve o N+1 em relações ForeignKey e OneToOneField. Ele instrui o Django a fazer um JOIN SQL, trazendo o objeto relacionado na mesma query - sem nenhuma query extra."
+
+msgid "How it works internally"
+msgstr "Como funciona internamente"
+
+msgid "Usage examples"
+msgstr "Exemplos de uso"
+
+msgid "Simple FK"
+msgstr "FK simples"
+
+msgid "Chained FK (author → country)"
+msgstr "FK encadeada (author → country)"
+
+msgid "Multiple relationships"
+msgstr "Múltiplos relacionamentos"
+
+msgid "All FKs (careful with cartesian product)"
+msgstr "Todos os FKs (cuidado com cartesian product)"
+
+msgid "When to use"
+msgstr "Quando usar"
+
+msgid "ForeignKey and OneToOneField relationships"
+msgstr "Relações ForeignKey e OneToOneField"
+
+msgid "When you always access the related object"
+msgstr "Quando você sempre vai acessar o objeto relacionado"
+
+msgid "When the relationship is to a single object (not a list)"
+msgstr "Quando a relação é para um único objeto (não uma lista)"
+
+msgid "Warning:"
+msgstr "Cuidado:"
+
+msgid "Don't use select_related() without arguments on models with many FKs - it JOINs all of them, which can generate huge queries and slow things down. Prefer listing explicitly: select_related(\"author\", \"category\")."
+msgstr "Não use select_related() sem argumentos em modelos com muitos FKs - ele faz JOIN em todos, o que pode gerar queries enormes e lentidão. Prefira listar explicitamente: select_related(\"author\", \"category\")."
+
+msgid "prefetch_related solves N+1 for ManyToManyField and reverse ForeignKey relationships (\"back\" relationships). Unlike select_related, it performs 2 separate queries and combines the results in Python - it's not possible to use JOIN for many-to-many relationships."
+msgstr "prefetch_related resolve o N+1 em relações ManyToManyField e reverse ForeignKey (relacionamentos \"de volta\"). Diferente do select_related, ele faz 2 queries separadas e combina os resultados em Python - não é possível usar JOIN para relações de muitos-para-muitos."
+
+
+msgid "query 2 - fetch ALL tags for books at once"
+msgstr "query 2 - busca TODAS as tags dos livros de uma vez"
+
+msgid "Reverse FK (reviews of each book)"
+msgstr "Reverse FK (reviews de cada livro)"
+
+msgid "Combined with select_related"
+msgstr "Combinado com select_related"
+
+msgid "Prefetch with custom queryset"
+msgstr "Prefetch com queryset customizado"
+
+msgid "select_related vs prefetch_related - visual difference"
+msgstr "select_related vs prefetch_related - diferença visual"
+
+msgid "Criteria"
+msgstr "Critério"
+
+msgid "Relationship type"
+msgstr "Tipo de relação"
+
+msgid "SQL mechanism"
+msgstr "Mecanismo SQL"
+
+msgid "JOIN in one query"
+msgstr "JOIN numa query só"
+
+msgid "2 separate queries + Python"
+msgstr "2 queries separadas + Python"
+
+msgid "Number of queries"
+msgstr "Número de queries"
+
+msgid "2 (independent of N)"
+msgstr "2 (independe do N)"
+
+msgid "Where data is combined"
+msgstr "Onde combina os dados"
+
+msgid "Database"
+msgstr "Banco de dados"
+
+msgid "Python (in memory)"
+msgstr "Python (em memória)"
+
+msgid "Supports extra filters"
+msgstr "Suporta filtros extras"
+
+msgid "No"
+msgstr "Não"
+
+msgid "Yes, via Prefetch()"
+msgstr "Sim, via Prefetch()"
+
+msgid "Practical rule:"
+msgstr "Regra prática:"
+
+msgid "If the relationship points to one object use select_related. If it points to many objects use prefetch_related."
+msgstr "Se o relacionamento aponta para um objeto use select_related. Se aponta para muitos objetos use prefetch_related."
+
+msgid "only() and defer()"
+msgstr "only() e defer()"
+
+msgid "Both solve the unnecessary SELECT * problem, but from opposite perspectives: only() specifies which fields to include, defer() specifies which fields to exclude."
+msgstr "Ambos resolvem o problema do SELECT * desnecessário, mas de perspectivas opostas: only() especifica quais campos incluir, defer() especifica quais campos excluir."
+
+msgid "only() - include only these"
+msgstr "only() - inclui apenas estes"
+
+msgid "id is always included automatically"
+msgstr "id é sempre incluído automaticamente"
+
+msgid "defer() - exclude only these"
+msgstr "defer() - exclui apenas estes"
+
+msgid "synopsis is loaded only if accessed"
+msgstr "synopsis é carregado só se acessado"
+
+msgid "The lazy behavior of defer()"
+msgstr "O comportamento lazy do defer()"
+
+msgid "Fields deferred with defer() are not lost - they are loaded automatically if you access them, but this triggers an extra query per object. Use defer() only when you're sure the field will rarely be accessed."
+msgstr "Campos deferidos com defer() não são perdidos - eles são carregados automaticamente se você acessá-los, mas isso dispara uma query extra por objeto. Use defer() só quando tiver certeza de que o campo raramente será acessado."
+
+msgid "access triggers new query!"
+msgstr "acesso dispara nova query!"
+
+msgid "When to use each:"
+msgstr "Quando usar cada um:"
+
+msgid "Use only() when you know exactly which fields you need (listings, APIs). Use defer() when you want to exclude only a specific heavy field (like a TextField with HTML) but need the rest."
+msgstr "Use only() quando sabe exatamente quais campos precisa (listagens, APIs). Use defer() quando quer excluir apenas um campo pesado específico (como um TextField com HTML) mas precisa dos demais."
+
+msgid "values() and values_list()"
+msgstr "values() e values_list()"
+
+msgid "When you don't need model instances - only raw data - values() and values_list() return dictionaries and tuples directly, without the overhead of instantiating Python objects."
+msgstr "Quando você não precisa de instâncias do modelo - apenas dos dados brutos - values() e values_list() retornam dicionários e tuplas diretamente, sem o overhead de instanciar objetos Python."
+
+msgid "values() - returns dictionaries"
+msgstr "values() - retorna dicionários"
+
+msgid "values_list() - returns tuples"
+msgstr "values_list() - retorna tuplas"
+
+msgid "flat=True for a single column"
+msgstr "flat=True para uma única coluna"
+
+msgid "Ideal use cases"
+msgstr "Casos de uso ideais"
+
+msgid "Populate an HTML select with id and name"
+msgstr "Popular um select HTML com id e nome"
+
+msgid "Export data to CSV or spreadsheet"
+msgstr "Exportar dados para CSV ou planilha"
+
+msgid "Pass data to a serializer (DRF, JSON)"
+msgstr "Passar dados para um serializador (DRF, JSON)"
+
+msgid "Check if values exist"
+msgstr "Verificar se valores existem"
+
+msgid "Limitation:"
+msgstr "Limitação:"
+
+msgid "Objects returned by values() and values_list() are simple dictionaries/tuples - you cannot call model methods on them (like get_absolute_url() or save()). If you need methods, use only() instead."
+msgstr "Objetos retornados por values() e values_list() são dicionários/tuplas simples - você não pode chamar métodos do modelo neles (como get_absolute_url() ou save()). Se precisar de métodos, use only() em vez disso."
+
+msgid "annotate() adds calculated fields directly in the SQL query, using database aggregation functions. Instead of loading all related objects into Python to count, sum, or calculate averages, you delegate this operation to the database - which is much more efficient for this."
+msgstr "annotate() adiciona campos calculados diretamente na query SQL, usando funções de agregação do banco de dados. Em vez de carregar todos os objetos relacionados em Python para contar, somar ou calcular médias, você delega essa operação ao banco - que é muito mais eficiente para isso."
+
+msgid "Practical examples"
+msgstr "Exemplos práticos"
+
+msgid "Count reviews in Python - wrong"
+msgstr "Contar reviews em Python - errado"
+
+msgid "still loads all Review objects"
+msgstr "ainda carrega todos os objetos Review"
+
+msgid "extra query!"
+msgstr "query extra!"
+
+msgid "Count reviews in database - correct"
+msgstr "Contar reviews no banco - correto"
+
+msgid "access without extra query"
+msgstr "acesso sem query extra"
+
+msgid "already in the object"
+msgstr "já está no objeto"
+
+msgid "Available aggregation functions"
+msgstr "Funções de agregação disponíveis"
+
+msgid "count"
+msgstr "contar"
+
+msgid "average price by author"
+msgstr "média de preço por autor"
+
+msgid "most expensive book per author"
+msgstr "livro mais caro por autor"
+
+msgid "total sales"
+msgstr "total de vendas"
+
+msgid "See annotate() in action"
+msgstr "Ver annotate() em ação"
+
+msgid "Indexes"
+msgstr "Índices"
+
+msgid "Indexes speed up search and filter queries. Without an index, the database does a Seq Scan - reads row by row until it finds what it needs. With an index, it does an Index Scan - goes directly to the data like a dictionary."
+msgstr "Índices aceleram queries de busca e filtro. Sem índice, o banco faz um Seq Scan - lê linha por linha até encontrar o que precisa. Com índice, faz um Index Scan - vai direto ao dado como num dicionário."
+
+msgid "How to define in Django"
+msgstr "Como definir no Django"
+
+msgid "Simple index on one field"
+msgstr "Índice simples em um campo"
+
+msgid "creates index automatically"
+msgstr "cria índice automaticamente"
+
+msgid "Composite index via Meta"
+msgstr "Índice composto via Meta"
+
+msgid "How to check if the index is being used"
+msgstr "Como verificar se o índice está sendo usado"
+
+msgid "When to create an index:"
+msgstr "Quando criar um índice:"
+
+msgid "on fields used in frequent filter(), order_by(), JOIN and DISTINCT. ForeignKeys already have automatic index in Django. Avoid indexing fields that change frequently - indexes have a write cost."
+msgstr "em campos usados em filter(), order_by(), JOIN e DISTINCT frequentes. ForeignKeys já têm índice automático no Django. Evite indexar campos que mudam muito - índices têm custo de escrita."
+
+msgid "Analysis Tools"
+msgstr "Ferramentas de análise"
+
+msgid "TOOL"
+msgstr "FERRAMENTA"
+
+msgid "Visual panel that appears on all pages with DEBUG=True. Shows number of queries, generated SQL, time per query and stack trace."
+msgstr "Painel visual que aparece em todas as páginas com DEBUG=True. Mostra número de queries, SQL gerado, tempo por query e stack trace."
+
+msgid "Persistent profiling dashboard. Records all requests and database queries - useful for comparing performance over time and identifying slow endpoints."
+msgstr "Dashboard persistente de profiling. Registra todas as requisições e queries no banco - útil para comparar performance ao longo do tempo e identificar endpoints lentos."
+
+msgid "Access at"
+msgstr "Acesse em"
+
+msgid "Python list with all queries from the current request. Only available with DEBUG=True. Useful in tests and diagnostic scripts."
+msgstr "Lista Python com todas as queries da requisição atual. Disponível apenas com DEBUG=True. Útil em testes e scripts de diagnóstico."
+
+msgid "see all queries"
+msgstr "ver todas as queries"
+
+
+msgid "Returns the database execution plan for the query. Available since Django 2.1."
+msgstr "Retorna o plano de execução do banco de dados para a query. Disponível desde Django 2.1."
+
+msgid "simple plan"
+msgstr "plano simples"
+
+msgid "detailed plan with real time (PostgreSQL)"
+msgstr "plano detalhado com tempo real (PostgreSQL)"
+
+msgid "What to look for in EXPLAIN:"
+msgstr "O que procurar no EXPLAIN:"
+
+msgid "Seq Scan indicates the database read the entire table (may need an index). Index Scan indicates the index was used. Hash Join and Nested Loop indicate how JOINs are being executed. cost= indicates the estimated cost (lower is better)."
+msgstr "Seq Scan indica que o banco leu a tabela inteira (pode precisar de índice). Index Scan indica que o índice foi usado. Hash Join e Nested Loop indicam como os JOINs estão sendo executados. cost= indica o custo estimado (menor é melhor)."
+
+msgid "See tools live"
+msgstr "Ver ferramentas ao vivo"
+
+msgid "Summary - when to use each technique"
+msgstr "Resumo - quando usar cada técnica"
+
+msgid "Situation"
+msgstr "Situação"
+
+msgid "Result"
+msgstr "Resultado"
+
+msgid "Accessing book.author in loop"
+msgstr "Acessando book.author no loop"
+
+msgid "N+1 → 1 query (JOIN)"
+msgstr "N+1 → 1 query (JOIN)"
+
+msgid "Accessing book.tags.all() in loop"
+msgstr "Acessando book.tags.all() no loop"
+
+msgid "N+1 → 2 queries"
+msgstr "N+1 → 2 queries"
+
+msgid "Listing using only 3 of 10 fields"
+msgstr "Listagem usando só 3 dos 10 campos"
+
+msgid "SELECT * → SELECT f1, f2, f3"
+msgstr "SELECT * → SELECT f1, f2, f3"
+
+msgid "Exclude only one heavy field"
+msgstr "Excluir apenas um campo pesado"
+
+msgid "synopsis loaded on demand"
+msgstr "synopsis carregado sob demanda"
+
+msgid "Need only dictionaries/tuples"
+msgstr "Precisa só de dicionários/tuplas"
+
+msgid "Without instantiating Python objects"
+msgstr "Sem instanciar objetos Python"
+
+msgid "Count records"
+msgstr "Contar registros"
+
+msgid "SELECT COUNT(*) without loading data"
+msgstr "SELECT COUNT(*) sem carregar dados"
+
+msgid "Check existence"
+msgstr "Verificar existência"
+
+msgid "SELECT 1 LIMIT 1"
+msgstr "SELECT 1 LIMIT 1"
+
+msgid "Count/sum relationships"
+msgstr "Contar/somar relacionamentos"
+
+msgid "Calculated in database, no Python loops"
+msgstr "Calculado no banco, sem loops Python"
+
+msgid "Slow filters on large columns"
+msgstr "Filtros lentos em colunas grandes"
+
+msgid "Seq Scan → Index Scan"
+msgstr "Seq Scan → Index Scan"
+
+msgid "Table returning all records"
+msgstr "Tabela retornando todos os registros"
+
+msgid "LIMIT/OFFSET - only current page"
+msgstr "LIMIT/OFFSET - só a página atual"
+
+msgid "Back to practical examples"
+msgstr "Voltar para os exemplos práticos"
+
+
+msgid "Select a problem and run it to see real-time statistics. Compare the performance of \"slow\" and \"fast\" versions."
+msgstr "Selecione um problema e execute para ver as estatísticas em tempo real. Compare o desempenho das versões \"lenta\" e \"rápida\"."
+
+msgid "Select the Problem:"
+msgstr "Selecione o Problema:"
+
+msgid "Choose a problem"
+msgstr "Escolha um problema"
+
+msgid "Run Slow"
+msgstr "Executar Slow"
+
+msgid "Run Fast"
+msgstr "Executar Fast"
+
+msgid "Explanation"
+msgstr "Explicação"
+
+msgid "Running..."
+msgstr "Executando..."
+
+msgid "Time (ms)"
+msgstr "Tempo (ms)"
+
+
+msgid "SQL"
+msgstr "SQL"
+
+msgid "Comparison"
+msgstr "Comparação"
+
+msgid "Fewer queries"
+msgstr "Queries a menos"
+
+msgid "Time saved"
+msgstr "Tempo economizado"
+
+msgid "Improvement"
+msgstr "Melhoria"
+
+msgid "Error executing:"
+msgstr "Erro ao executar:"
+
+msgid "Error:"
+msgstr "Erro:"
+
+msgid "Queries"
+msgstr "Queries"
+
+msgid "N+1 - ForeignKey (select_related)"
+msgstr "N+1 - ForeignKey (select_related)"
+
+msgid "N+1 - ManyToMany (prefetch_related)"
+msgstr "N+1 - ManyToMany (prefetch_related)"
+
+msgid "Unnecessary SELECT * (only/defer)"
+msgstr "SELECT * desnecessário (only/defer)"
+
+msgid "Pagination"
+msgstr "Paginação"
+
+msgid "N+1 Query - ForeignKey"
+msgstr "N+1 Query - ForeignKey"
+
+msgid "When fetching books without select_related, each access to the author (ForeignKey) triggers a new database query."
+msgstr "Ao buscar livros sem select_related, cada acesso ao autor (ForeignKey) gera uma nova query no banco."
+
+msgid "Book.objects.all() - WITHOUT select_related"
+msgstr "Book.objects.all() - SEM select_related"
+
+msgid "Book.objects.select_related(\"author\") - WITH select_related"
+msgstr "Book.objects.select_related(\"author\") - COM select_related"
+
+msgid "Use select_related() to JOIN with the authors table in a single query."
+msgstr "Use select_related() para fazer JOIN com a tabela de autores em uma única query."
+
+msgid "N+1 Query - ManyToMany"
+msgstr "N+1 Query - ManyToMany"
+
+msgid "When iterating over books and accessing their tags, each access triggers a separate query."
+msgstr "Ao iterar sobre livros e acessar suas tags, cada acesso gera uma query separada."
+
+msgid "Book.objects.all() - WITHOUT prefetch_related"
+msgstr "Book.objects.all() - SEM prefetch_related"
+
+msgid "Book.objects.prefetch_related(\"tags\") - WITH prefetch_related"
+msgstr "Book.objects.prefetch_related(\"tags\") - COM prefetch_related"
+
+msgid "Use prefetch_related() to fetch all tags in a separate query (2 queries total)."
+msgstr "Use prefetch_related() para buscar todas as tags em uma query separada (2 queries total)."
+
+
+msgid "Loading all database fields, including heavy fields like TextField, even when not needed."
+msgstr "Carregar todos os campos do banco, incluindo campos pesados como TextField, mesmo quando não necessários."
+
+msgid "Book.objects.all() - loads ALL fields"
+msgstr "Book.objects.all() - carrega TODOS os campos"
+
+msgid "Book.objects.only(\"title\", \"price\") - loads ONLY the needed fields"
+msgstr "Book.objects.only(\"title\", \"price\") - carrega APENAS os campos necessários"
+
+msgid "Use only() to specify which fields you need, or defer() to exclude unnecessary fields."
+msgstr "Use only() para especificar quais campos você precisa, ou defer() para excluir campos desnecessários."
+
+msgid "Using len() on a QuerySet forces evaluation of ALL records just to count in Python."
+msgstr "Usar len() em um QuerySet força a avaliação de TODOS os registros para contar em Python."
+
+msgid "len(Book.objects.all()) - LOADS all records into memory"
+msgstr "len(Book.objects.all()) - CARREGA todos os registros na memória"
+
+msgid "Book.objects.count() - uses COUNT(*) in the database"
+msgstr "Book.objects.count() - usa COUNT(*) no banco de dados"
+
+msgid "Use .count() which executes SELECT COUNT(*) in the database, much more efficient."
+msgstr "Use .count() que executa SELECT COUNT(*) no banco, muito mais eficiente."
+
+msgid "Loading all records at once into memory causes slowness and high memory consumption."
+msgstr "Carregar todos os registros de uma vez na memória causa lentidão e alto consumo de memória."
+
+msgid "Book.objects.all()[:200] - loads everything at once"
+msgstr "Book.objects.all()[:200] - carrega tudo de uma vez"
+
+msgid "Paginator(qs, per_page=20) - loads only one page"
+msgstr "Paginator(qs, per_page=20) - carrega apenas uma página"
+
+msgid "Use Django Paginator to load only the necessary records per page."
+msgstr "Use Paginator do Django para carregar apenas os registros necessários por página."
+
+msgid "N+1 ForeignKey"
+msgstr "N+1 ForeignKey"
+
+msgid "SLOW"
+msgstr "SLOW"
+
+msgid "Accesses book.author.name in the template without select_related. Each book triggers an extra query to fetch the author."
+msgstr "Acessa book.author.name no template sem select_related. Cada livro dispara uma query extra para buscar o autor."
+
+msgid "Queries executadas"
+msgstr "Queries executadas"
+
+msgid "Queries executadas: "
+msgstr "Queries executadas: "
+
+msgid "books loaded"
+msgstr "livros carregados"
+
+msgid "books total, showing"
+msgstr "livros total, mostrando"
+
+msgid "showing"
+msgstr "mostrando"
+
+msgid "LENTO"
+msgstr "LENTO"
+
+msgid "RÁPIDO"
+msgstr "RÁPIDO"
+
+msgid "sem select_related"
+msgstr "sem select_related"
+
+msgid "Título"
+msgstr "Título"
+
+msgid "Autor"
+msgstr "Autor"
+
+msgid "Ano"
+msgstr "Ano"
+
+msgid "FAST"
+msgstr "FAST"
+
+msgid "select_related(\"author\") does a JOIN and brings author and book in a single query."
+msgstr "select_related(\"author\") faz um JOIN e traz autor e livro numa única query."
+
+msgid "N+1 ManyToMany"
+msgstr "N+1 ManyToMany"
+
+msgid "Accesses book.tags.all() in the template without prefetch_related. Each book triggers an extra query to fetch its tags."
+msgstr "Acessa book.tags.all() no template sem prefetch_related. Cada livro dispara uma query extra para buscar suas tags."
+
+msgid "without prefetch_related"
+msgstr "sem prefetch_related"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "prefetch_related(\"tags\") does 2 queries and combines results in Python - regardless of how many books there are."
+msgstr "prefetch_related(\"tags\") faz 2 queries e combina resultados em Python - independente de quantos livros houver."
+
+
+msgid "Fetches all model fields, including synopsis (TextField with lots of text), even when using only title, year and price."
+msgstr "Busca todos os campos do modelo, incluindo synopsis (TextField com muito texto), mesmo usando só título, ano e preço."
+
+msgid "loads synopsis, bio and everything else"
+msgstr "carrega synopsis, bio e tudo mais"
+
+msgid "Price"
+msgstr "Preço"
+
+msgid "only(\"title\", \"published_year\", \"price\") generates SELECT title, published_year, price FROM ... - without fetching heavy fields that won't be used."
+msgstr "only(\"title\", \"published_year\", \"price\") gera SELECT title, published_year, price FROM ... - sem trazer campos pesados que não serão usados."
+
+
+msgid "len(queryset) executes SELECT * and instantiates all objects in memory just to count. With 100 thousand records this can hang."
+msgstr "len(queryset) executa SELECT * e instancia todos os objetos em memória só para contar. Com 100 mil registros isso pode travar."
+
+msgid "SELECT * FROM store_book"
+msgstr "SELECT * FROM store_book"
+
+msgid "Total books"
+msgstr "Total de livros"
+
+msgid ".count() becomes SELECT COUNT(*) - no objects instantiated. annotate() calculates the total reviews per book directly in the database."
+msgstr ".count() vira SELECT COUNT(*) - nenhum objeto instanciado. annotate() calcula o total de reviews por livro direto no banco."
+
+msgid "Reviews"
+msgstr "Reviews"
+
+
+msgid "Returns all records at once. With lots of data this overloads the database, memory and the browser."
+msgstr "Retorna todos os registros de uma vez. Com muitos dados isso sobrecarrega banco, memória e o navegador."
+
+msgid "books loaded"
+msgstr "livros carregados"
+
+msgid "all records"
+msgstr "todos os registros"
+
+
+msgid "Paginator adds LIMIT 20 OFFSET N to the query - the database returns only the requested page."
+msgstr "Paginator adiciona LIMIT 20 OFFSET N na query - o banco retorna só a página solicitada."
+
+msgid "books total, showing"
+msgstr "livros no total, mostrando"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "of"
+msgstr "de"
+
+msgid "Next"
+msgstr "Próxima"
+
+msgid "Query Analysis Tools"
+msgstr "Ferramentas de análise de queries"
+
+msgid "Side panel that appears on all pages with DEBUG=True. Shows number of queries, generated SQL, time per query and stack trace."
+msgstr "Painel lateral que aparece em todas as páginas com DEBUG=True. Mostra número de queries, SQL gerado, tempo de cada query e stack trace."
+
+msgid "How to use:"
+msgstr "Como usar:"
+
+msgid "look at the panel on the right side of this page. Click on SQL to see the queries for this view."
+msgstr "olhe o painel no canto direito desta página. Clique em SQL para ver as queries desta view."
+
+msgid "necessary in Docker"
+msgstr "necessário no Docker"
+
+msgid "Python list with all queries executed in the current request. Useful for programmatic inspection - in views, scripts or tests. Requires DEBUG=True."
+msgstr "Lista Python com todas as queries executadas na requisição atual. Útil para inspecionar programaticamente - em views, scripts ou testes. Requer DEBUG=True."
+
+msgid "reset counter"
+msgstr "zera o contador"
+
+msgid "force execution"
+msgstr "força a execução"
+
+msgid "Queries executed in this view"
+msgstr "Queries executadas nesta view"
+
+msgid "time"
+msgstr "tempo"
+
+msgid "Complete profiling dashboard. Records all requests, queries per request, execution time and stack trace. Persists data in the database - useful for comparing requests over time."
+msgstr "Dashboard completo de profiling. Registra todas as requisições, queries por request, tempo de execução e stack trace. Persiste os dados no banco - útil para comparar requests ao longo do tempo."
+
+msgid "Access the dashboard at"
+msgstr "Acesse o dashboard em"
+
+msgid "you will see this request recorded there."
+msgstr "você verá esta requisição registrada lá."
+
+msgid "Shows the actual execution plan from PostgreSQL - identifies seq scans, used indexes, estimated cost and real time. Run directly in psql or via QuerySet.explain() in Django."
+msgstr "Mostra o plano de execução real do PostgreSQL - identifica seq scans, índices usados, custo estimado e tempo real. Roda direto no psql ou via QuerySet.explain() no Django."
+
+msgid "via Django (Django 2.1+)"
+msgstr "via Django (Django 2.1+)"
+
+msgid "via psql inside container"
+msgstr "via psql dentro do container"
+
+msgid "Look for Seq Scan (without index) vs Index Scan (with index). The published_year field has an index defined in the model - compare the plan with and without it."
+msgstr "Procure por Seq Scan (sem índice) vs Index Scan (com índice). O campo published_year tem um índice definido no model - compare o plano com e sem ele."
+
+msgid "Back to index"
+msgstr "Voltar para o índice"
+
+msgid "Language"
+msgstr "Idioma"
+
+msgid "Playground"
+msgstr "Playground"
+
+msgid "Docs"
+msgstr "Docs"
+
+msgid "select_related does a JOIN and brings author and book in a single query."
+msgstr "select_related faz um JOIN e traz autor e livro numa única query."
+
+msgid "prefetch_related does 2 queries and combines results in Python - regardless of how many books there are."
+msgstr "prefetch_related faz 2 queries e combina resultados em Python - independente de quantos livros houver."
+
+msgid "only generates SELECT title, published_year, price FROM ... - without fetching heavy fields that won't be used."
+msgstr "only gera SELECT title, published_year, price FROM ... - sem trazer campos pesados que não serão usados."
+
+msgid "Result:"
+msgstr "Resultado:"
+
+msgid "Books loaded"
+msgstr "livros carregados"
+
+msgid "Look for Seq Scan"
+msgstr "Procure por Seq Scan"
+
+msgid "Documentation"
+msgstr "Documentação"

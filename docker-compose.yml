@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:${WEB_PORT}
+    volumes:
+      - .:/app
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    env_file: .env
+    depends_on:
+      - db
+
+  web-test:
+    build:
+      context: .
+      target: test
+    profiles:
+      - test
+    command: pytest -v
+    volumes:
+      - .:/app
+    env_file: .env
+    depends_on:
+      - db
+
+  web-shell:
+    build: .
+    profiles:
+      - test
+    command: sh
+    volumes:
+      - .:/app
+    env_file: .env
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

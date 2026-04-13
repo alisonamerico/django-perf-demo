@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="{{ LANGUAGE_CODE|default:"en" }}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {% block title %}Django Performance Demo{% endblock %}
+        </title>
+        <link rel="stylesheet" href="{% static 'store/css/base.css' %}">
+        {% block extra_style %}{% endblock %}
+    </head>
+    <body>
+        <div class="layout">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-header">
+                    <a href="{% url 'store:index' %}" class="sidebar-brand">
+                        <span>⚡</span> Django Perf
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">{% trans "Getting Started" %}</div>
+                    <a href="{% url 'store:index' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">{% trans "Overview" %}</a>
+                    <a href="{% url 'store:playground' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'playground' %}active{% endif %} new">🎮 {% trans "Interactive Playground" %}</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">{% trans "Performance Problems" %}</div>
+                    <a href="{% url 'store:books_slow' %}" class="nav-link sub">1. N+1 - ForeignKey</a>
+                    <a href="{% url 'store:tags_slow' %}" class="nav-link sub">2. N+1 - ManyToMany</a>
+                    <a href="{% url 'store:fields_slow' %}" class="nav-link sub">3. SELECT *</a>
+                    <a href="{% url 'store:count_slow' %}" class="nav-link sub">4. len() vs count()</a>
+                    <a href="{% url 'store:paginate_slow' %}" class="nav-link sub">5. Pagination</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">{% trans "Tools" %}</div>
+                    <a href="{% url 'store:tools' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'tools' %}active{% endif %}">{% trans "Debug & Profiling" %}</a>
+                    <a href="{% url 'store:docs' %}"
+                       class="nav-link {% if request.resolver_match.url_name == 'docs' %}active{% endif %}">{% trans "Full Documentation" %}</a>
+                </div>
+            </nav>
+            <!-- Main content -->
+            <main class="main">
+                <header class="header">
+                    <div class="header-title">
+                        {% block header %}
+                            {% trans "Django Performance Demo" %}
+                        {% endblock %}
+                    </div>
+                    <div class="header-links">
+                        <a href="{% url 'store:playground' %}">{% trans "Playground" %}</a>
+                        <a href="{% url 'store:docs' %}">{% trans "Docs" %}</a>
+                        <div class="lang-switcher">
+                            <form action="/i18n/setlang/" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" name="language" value="en" class="lang-btn">EN</button>
+                            </form>
+                            <form action="/i18n/setlang/" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" name="language" value="pt-BR" class="lang-btn">PT</button>
+                            </form>
+                        </div>
+                    </div>
+                </header>
+                <div class="content">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </body>
+</html>

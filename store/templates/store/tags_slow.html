@@ -1,0 +1,35 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}N+1 M2M - Slow{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        N+1 ManyToMany <span class="badge-slow">{% trans "SLOW" %}</span>
+    </h1>
+    <p>
+        {% trans "Accesses book.tags.all() in the template without prefetch_related. Each book triggers an extra query to fetch its tags." %}
+    </p>
+    <pre>books = Book.objects.all()[:50]  # {% trans "without prefetch_related" %}</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Tags" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>
+                        <div class="tags">
+                            {% for tag in book.tags.all %}<span class="tag">{{ tag.name }}</span>{% endfor %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'store/base.html' %}
+{% load i18n static %}
+{% block title %}
+    {% trans "Interactive Playground" %} - {% trans "Django Performance Demo" %}
+{% endblock %}
+{% block header %}
+    {% trans "Playground" %}
+{% endblock %}
+{% block extra_style %}
+    <link rel="stylesheet" href="{% static 'store/css/playground.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="page-title">🎮 {% trans "Interactive Playground" %}</div>
+    <p class="pg-description">
+        {% trans "Select a problem and run it to see real-time statistics. Compare the performance of \"slow\" and \"fast\" versions." %}
+    </p>
+    <div class="card">
+        <label class="pg-label">{% trans "Select the Problem:" %}</label>
+        <select id="problemSelect" class="pg-select">
+            <option value="">- {% trans "Choose a problem" %} -</option>
+            <option value="n1_fk">N+1 - ForeignKey (select_related)</option>
+            <option value="n1_m2m">N+1 - ManyToMany (prefetch_related)</option>
+            <option value="select_star">{% trans "Unnecessary SELECT * (only/defer)" %}</option>
+            <option value="len_count">len() vs count()</option>
+            <option value="pagination">{% trans "Pagination" %}</option>
+        </select>
+        <div class="pg-actions">
+            <button id="runSlow" class="pg-btn pg-btn-slow" disabled>⚠️ {% trans "Run Slow" %}</button>
+            <button id="runFast" class="pg-btn pg-btn-fast" disabled>✅ {% trans "Run Fast" %}</button>
+        </div>
+    </div>
+    <div id="explanation" class="pg-explanation">
+        <h3>📖 {% trans "Explanation" %}</h3>
+        <div id="explanationContent"></div>
+    </div>
+    <div id="loading" class="pg-loading">
+        <div class="pg-loading-text">⏳ {% trans "Running..." %}</div>
+    </div>
+    <div id="results" class="pg-results">
+        <div class="pg-grid">
+            <div class="card">
+                <span class="badge badge-slow">❌ Slow</span>
+                <div class="pg-stat slow">
+                    <div class="pg-stat-value" id="slowQueries">-</div>
+                    <div class="pg-stat-label">{% trans "Queries" %}</div>
+                </div>
+                <div class="pg-stat slow">
+                    <div class="pg-stat-value" id="slowTime">-</div>
+                    <div class="pg-stat-label">{% trans "Time (ms)" %}</div>
+                </div>
+                <h4 class="pg-result-title">{% trans "Result:" %}</h4>
+                <pre id="slowResult" class="pg-code">-</pre>
+                <h4 class="pg-result-title">SQL:</h4>
+                <pre id="slowQueriesList" class="pg-code">-</pre>
+            </div>
+            <div class="card">
+                <span class="badge badge-fast">✅ Fast</span>
+                <div class="pg-stat fast">
+                    <div class="pg-stat-value" id="fastQueries">-</div>
+                    <div class="pg-stat-label">{% trans "Queries" %}</div>
+                </div>
+                <div class="pg-stat fast">
+                    <div class="pg-stat-value" id="fastTime">-</div>
+                    <div class="pg-stat-label">{% trans "Time (ms)" %}</div>
+                </div>
+                <h4 class="pg-result-title">{% trans "Result:" %}</h4>
+                <pre id="fastResult" class="pg-code">-</pre>
+                <h4 class="pg-result-title">SQL:</h4>
+                <pre id="fastQueriesList" class="pg-code">-</pre>
+            </div>
+        </div>
+        <div class="pg-compare">
+            <h3 class="pg-compare-title">📊 {% trans "Comparison" %}</h3>
+            <div id="comparisonSummary"></div>
+        </div>
+    </div>
+    <script>
+const explanations = {
+  n1_fk: {
+    title: 'N+1 Query - ForeignKey',
+    problem: 'When fetching books without select_related, each access to the author (ForeignKey) triggers a new database query.',
+    slow: 'Book.objects.all() - WITHOUT select_related',
+    fast: 'Book.objects.select_related("author") - WITH select_related',
+    solution: 'Use select_related() to JOIN with the authors table in a single query.'
+  },
+  n1_m2m: {
+    title: 'N+1 Query - ManyToMany',
+    problem: 'When iterating over books and accessing their tags, each access triggers a separate query.',
+    slow: 'Book.objects.all() - WITHOUT prefetch_related',
+    fast: 'Book.objects.prefetch_related("tags") - WITH prefetch_related',
+    solution: 'Use prefetch_related() to fetch all tags in a separate query (2 queries total).'
+  },
+  select_star: {
+    title: 'Unnecessary SELECT *',
+    problem: 'Loading all database fields, including heavy fields like TextField, even when not needed.',
+    slow: 'Book.objects.all() - loads ALL fields',
+    fast: 'Book.objects.only("title", "price") - loads ONLY the needed fields',
+    solution: 'Use only() to specify which fields you need, or defer() to exclude unnecessary fields.'
+  },
+  len_count: {
+    title: 'len() vs count()',
+    problem: 'Using len() on a QuerySet forces evaluation of ALL records just to count in Python.',
+    slow: 'len(Book.objects.all()) - LOADS all records into memory',
+    fast: 'Book.objects.count() - uses COUNT(*) in the database',
+    solution: 'Use .count() which executes SELECT COUNT(*) in the database, much more efficient.'
+  },
+  pagination: {
+    title: 'Missing Pagination',
+    problem: 'Loading all records at once into memory causes slowness and high memory consumption.',
+    slow: 'Book.objects.all()[:200] - loads everything at once',
+    fast: 'Paginator(qs, per_page=20) - loads only one page',
+    solution: 'Use Django Paginator to load only the necessary records per page.'
+  }
+};
+
+let slowData = null;
+let fastData = null;
+
+const problemSelect = document.getElementById('problemSelect');
+const runSlowBtn = document.getElementById('runSlow');
+const runFastBtn = document.getElementById('runFast');
+const resultsDiv = document.getElementById('results');
+const loadingDiv = document.getElementById('loading');
+const explanationDiv = document.getElementById('explanation');
+
+problemSelect.addEventListener('change', function() {
+  const problem = this.value;
+  if (problem) {
+    runSlowBtn.disabled = false;
+    runFastBtn.disabled = false;
+    showExplanation(problem);
+    resultsDiv.style.display = 'none';
+    slowData = null;
+    fastData = null;
+  } else {
+    runSlowBtn.disabled = true;
+    runFastBtn.disabled = true;
+    explanationDiv.style.display = 'none';
+    resultsDiv.style.display = 'none';
+  }
+});
+
+function showExplanation(problem) {
+  const exp = explanations[problem];
+  document.getElementById('explanationContent').innerHTML = `
+    <p class="pg-exp-problem"><strong>Problem:</strong> ${exp.problem}</p>
+    <p class="pg-exp-code"><code>${exp.slow}</code></p>
+    <p class="pg-exp-code"><code>${exp.fast}</code></p>
+    <p class="pg-exp-solution"><strong>Solution:</strong> ${exp.solution}</p>
+  `;
+  explanationDiv.style.display = 'block';
+}
+
+async function runTest(variant) {
+  const problem = problemSelect.value;
+  if (!problem) return;
+
+  resultsDiv.style.display = 'none';
+  loadingDiv.style.display = 'block';
+
+  const formData = new FormData();
+  formData.append('problem', problem);
+  formData.append('variant', variant);
+
+  try {
+    const response = await fetch('{% url "store:playground_api" %}', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+
+    if (variant === 'slow') {
+      slowData = data;
+    } else {
+      fastData = data;
+    }
+
+    displayResults();
+  } catch (error) {
+    alert('Error executing: ' + error.message);
+  } finally {
+    loadingDiv.style.display = 'none';
+  }
+}
+
+function displayResults() {
+  resultsDiv.style.display = 'block';
+
+  if (slowData && !slowData.error) {
+    document.getElementById('slowQueries').textContent = slowData.query_count;
+    document.getElementById('slowTime').textContent = slowData.execution_time_ms + 'ms';
+    document.getElementById('slowResult').textContent = JSON.stringify(slowData.result, null, 2);
+    document.getElementById('slowQueriesList').textContent = slowData.queries.map(q => q.sql).join('\n\n');
+  } else if (slowData && slowData.error) {
+    document.getElementById('slowResult').textContent = 'Error: ' + slowData.error;
+  }
+
+  if (fastData && !fastData.error) {
+    document.getElementById('fastQueries').textContent = fastData.query_count;
+    document.getElementById('fastTime').textContent = fastData.execution_time_ms + 'ms';
+    document.getElementById('fastResult').textContent = JSON.stringify(fastData.result, null, 2);
+    document.getElementById('fastQueriesList').textContent = fastData.queries.map(q => q.sql).join('\n\n');
+  } else if (fastData && fastData.error) {
+    document.getElementById('fastResult').textContent = 'Error: ' + fastData.error;
+  }
+
+  if (slowData && fastData && !slowData.error && !fastData.error) {
+    const queryDiff = slowData.query_count - fastData.query_count;
+    const timeDiff = slowData.execution_time_ms - fastData.execution_time_ms;
+    const improvement = timeDiff > 0 ? ((timeDiff / slowData.execution_time_ms) * 100).toFixed(1) : 0;
+
+    document.getElementById('comparisonSummary').innerHTML = `
+      <div class="pg-compare-grid">
+        <div>
+          <div class="pg-compare-value pg-slow">${queryDiff > 0 ? '-' + queryDiff : queryDiff}</div>
+          <div class="pg-compare-label">Fewer queries</div>
+        </div>
+        <div>
+          <div class="pg-compare-value pg-slow">${timeDiff > 0 ? timeDiff.toFixed(1) : '0'}ms</div>
+          <div class="pg-compare-label">Time saved</div>
+        </div>
+        <div>
+          <div class="pg-compare-value pg-fast">${improvement}%</div>
+          <div class="pg-compare-label">Improvement</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+runSlowBtn.addEventListener('click', () => runTest('slow'));
+runFastBtn.addEventListener('click', () => runTest('fast'));
+    </script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}
+    {% trans "Pagination" %} - Fast
+{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        {% trans "With pagination" %} <span class="badge-fast">{% trans "FAST" %}</span>
+    </h1>
+    <p>{% trans "Paginator adds LIMIT 20 OFFSET N to the query - the database returns only the requested page." %}</p>
+    <pre>paginator = Paginator(qs, per_page=20)
+page = paginator.get_page(request.GET.get("page", 1))</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Year" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in page %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author.name }}</td>
+                    <td>{{ book.published_year }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong> - {{ page.paginator.count }} {% trans "books total, showing" %} {{ page.object_list|length }}
+    </div>
+    <div style="margin-top:1rem;
+                display:flex;
+                gap:0.75rem;
+                align-items:center">
+        {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}" style="color:#5b21b6">← {% trans "Previous" %}</a>
+        {% endif %}
+        <span style="color:#64748b">{% trans "Page" %} {{ page.number }} {% trans "of" %} {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}" style="color:#5b21b6">{% trans "Next" %} →</a>
+        {% endif %}
+    </div>
+{% endblock %}

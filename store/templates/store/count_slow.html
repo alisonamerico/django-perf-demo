@@ -1,0 +1,19 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}count() - Slow{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        len() vs count() <span class="badge-slow">{% trans "SLOW" %}</span>
+    </h1>
+    <p>
+        {% trans "len(queryset) executes SELECT * and instantiates all objects in memory just to count. With 100 thousand records this can hang." %}
+    </p>
+    <pre>books = Book.objects.all()
+total = len(books)  # SELECT * FROM store_book</pre>
+    <p style="font-size:1.1rem; margin-top:1rem;">
+        {% trans "Total books" %}: <strong>{{ total }}</strong>
+    </p>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}count() - Fast{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        len() vs count() <span class="badge-fast">{% trans "FAST" %}</span>
+    </h1>
+    <p>
+        {% trans ".count() becomes SELECT COUNT(*) - no objects instantiated. annotate() calculates the total reviews per book directly in the database." %}
+    </p>
+    <pre>total = Book.objects.count()  # SELECT COUNT(*)
+books = Book.objects.annotate(num_reviews=Count("reviews")).only("title", "published_year")[:50]</pre>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+    <p style="font-size:1.1rem; margin-top:1rem;">
+        {% trans "Total books" %}: <strong>{{ total }}</strong>
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Year" %}</th>
+                <th>{% trans "Reviews" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.published_year }}</td>
+                    <td>{{ book.num_reviews }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}N+1 FK — Slow{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        N+1 ForeignKey <span class="badge-slow">{% trans "SLOW" %}</span>
+    </h1>
+    <p>
+        {% trans "Accesses book.author.name in the template without select_related. Each book triggers an extra query to fetch the author." %}
+    </p>
+    <pre>books = Book.objects.all()[:50]  # {% trans "without select_related" %}</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Year" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author.name }}</td>
+                    <td>{{ book.published_year }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

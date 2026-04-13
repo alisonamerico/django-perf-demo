@@ -1,0 +1,33 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}SELECT * - Slow{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        {% trans "Unnecessary SELECT *" %} <span class="badge-slow">{% trans "SLOW" %}</span>
+    </h1>
+    <p>
+        {% trans "Fetches all model fields, including synopsis (TextField with lots of text), even when using only title, year and price." %}
+    </p>
+    <pre>books = Book.objects.all()[:50]  # {% trans "loads synopsis, bio and everything else" %}</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Year" %}</th>
+                <th>{% trans "Price" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.published_year }}</td>
+                    <td>R$ {{ book.price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}

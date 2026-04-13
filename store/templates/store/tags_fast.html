@@ -1,0 +1,35 @@
+{% extends "store/base.html" %}
+{% load i18n %}
+{% block title %}N+1 M2M - Fast{% endblock %}
+{% block content %}
+    <h1 class="page-title">
+        N+1 ManyToMany <span class="badge-fast">{% trans "FAST" %}</span>
+    </h1>
+    <p>
+        {% trans "prefetch_related does 2 queries and combines results in Python - regardless of how many books there are." %}
+    </p>
+    <pre>books = Book.objects.prefetch_related("tags")[:50]</pre>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Tags" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>
+                        <div class="tags">
+                            {% for tag in book.tags.all %}<span class="tag">{{ tag.name }}</span>{% endfor %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="query-counter">
+        {% trans "Queries executed" %}: <strong>{{ query_count }}</strong>
+    </div>
+{% endblock %}
